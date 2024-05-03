@@ -3,9 +3,9 @@ import json
 import re
 from datetime import datetime
 
-course_name = "职场求生攻略"
+course_name = "程序员职业规划手册"
 # 替换为你的 Cookie
-cookie = "your_cookie_here"
+cookie = "your cookie"
 course_id = ""
 # 常量定义
 BASE_URL = "time.geekbang.org"
@@ -67,6 +67,7 @@ def get_comments(filename):
         for comment in json_data["data"]["list"]:
             article_title = comment["article_title"]
             comment_content = comment["comment_content"]
+            comment_content = re.sub(r'\n\s*\n', '\n', comment_content)
             comment_ctime = datetime.fromtimestamp(comment["comment_ctime"]).strftime("%Y-%m-%d %H:%M:%S")
             replies = []
             for reply in comment["replies"]:

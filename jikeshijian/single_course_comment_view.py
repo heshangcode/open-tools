@@ -3,7 +3,7 @@ import json
 import re
 from datetime import datetime
 
-course_name = "程序员职业规划手册"
+course_name = "职场求生攻略"
 # 替换为你的 Cookie
 cookie = "your cookie"
 course_id = ""

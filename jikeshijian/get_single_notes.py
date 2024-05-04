@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from global_utils import parse_notes_data, http_post_request
 from jikeshijian.global_value import API_NOTE_LIST, directory
@@ -14,10 +15,13 @@ def get_parts_notes(payload):
             summary = entry["summary"]
             parts = entry["parts"]
             notes = entry["notes"]
+            score = entry["score"]
+            time = datetime.fromtimestamp(score).strftime("%Y-%m-%d %H:%M:%S")
             formatted_entry = {
                 "summary": summary,
                 "parts": parts,
                 "notes": notes,
+                "time": time
             }
             formatted_title["entries"].append(formatted_entry)
         formatted_results.append(formatted_title)

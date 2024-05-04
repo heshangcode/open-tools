@@ -17,7 +17,8 @@
 
 ### 填充 cookie 到文件里
 
-sign_course_comment_view.py
+- 指定课程导出：sign_course_comment_view.py
+- 所有课程导出：batch_course_comment_view.py
 
 ### 运行导出自己的留言
 

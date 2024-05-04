@@ -20,12 +20,11 @@
 ### 导出自己的划线、笔记
 
 - 运行文件：batch_parts_notes.py
-
-
+<img width="267" alt="image" src="https://github.com/heshangcode/open-tools/assets/39662806/d706b6c3-fb2b-4c99-ae70-53dc53acd851">
 
 ### 导出自己的留言
 
 - 运行文件：batch_course_comment.py
+<img width="297" alt="image" src="https://github.com/heshangcode/open-tools/assets/39662806/8bb14ec8-dea4-43b9-abe3-19891d663f06">
 
-  
 

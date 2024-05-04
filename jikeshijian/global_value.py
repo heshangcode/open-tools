@@ -5,6 +5,8 @@ BASE_URL = "time.geekbang.org"
 API_INFO = "/serv/v3/column/info"
 API_COMMENTS = "/serv/v1/my/comments"
 API_COMMENTS_PRODUCTS_ALL = "/serv/v1/my/comment/products/all"
+API_NOTE_LIST = "/serv/v3/note/list"
+API_NOTE_PRODUCTS = "/serv/v3/note/products"
 HEADERS = {
     'Accept': 'application/json, text/plain, */*',
     'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',

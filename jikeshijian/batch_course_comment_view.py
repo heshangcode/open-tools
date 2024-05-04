@@ -1,10 +1,13 @@
 import http.client
 import json
+import os
 import re
 from datetime import datetime
 
 # 替换为你的 Cookie
 cookie = "替换为你的 Cookie"
+# 替换为你的下载目录
+directory = "/Users/heshang/Documents/jikeshijian/"
 # 常量定义
 BASE_URL = "time.geekbang.org"
 API_INFO = "/serv/v3/column/info"
@@ -100,7 +103,9 @@ if __name__ == "__main__":
         for item in section['list']:
             title_ = item['title']
             course_id = item['id']
-            filename = f"{title_}.md"
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            filename = directory + f"{title_}.md"
             get_comments(filename, course_id)
             # if course_name != "" and title_ == course_name:
             #     print("找到匹配项:")

@@ -1,11 +1,14 @@
 import http.client
 import json
+import os
 import re
 from datetime import datetime
 
 course_name = "职场求生攻略"
 # 替换为你的 Cookie
 cookie = "your cookie"
+# 替换为你的下载目录
+directory = "/Users/heshang/Documents/jikeshijian/"
 course_id = ""
 # 常量定义
 BASE_URL = "time.geekbang.org"
@@ -90,5 +93,7 @@ def get_comments(filename):
 if __name__ == "__main__":
     course_id = get_course_id()
     course_name = get_course_name()
-    filename = f"{course_name}.md"
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    filename = directory + f"{course_name}.md"
     get_comments(filename)

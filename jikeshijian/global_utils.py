@@ -5,6 +5,7 @@ import re
 from datetime import datetime
 
 from jikeshijian.global_value import BASE_URL, HEADERS, cookie, API_COMMENTS
+from jikeshijian.global_class import Part, Note, Comment, PartNote
 
 
 def generate_curl_command(path, payload):
@@ -17,6 +18,7 @@ def generate_curl_command(path, payload):
         curl_cmd += f"-H 'Cookie: {HEADERS['Cookie']}' "
     curl_cmd += f"-d '{json.dumps(payload)}'"
     return curl_cmd
+
 
 def http_post_request(path, payload):
     conn = http.client.HTTPSConnection(BASE_URL)
@@ -31,22 +33,26 @@ def http_post_request(path, payload):
     else:
         raise Exception(f"HTTP request failed with status {response.status}")
 
+
 def get_comments(filename, course_id):
     payload = {"product_id": course_id, "prev": 0, "size": 100, "orderby": "comment_ctime"}
     json_data = http_post_request(API_COMMENTS, payload)
+
+    # 如果文件不存在, 则创建文件
+    if not os.path.exists(filename):
+        open(filename, 'w', encoding='utf-8').close()
 
     # 打开文件,读取内容
     with open(filename, 'r+', encoding='utf-8') as file:
         content = file.read()
 
         # 检查是否存在一级标题"我的留言"
-        heading_pattern = r'^# 我的留言\n(.*?)(^# |$)'
+        heading_pattern = r'^(#\s*我的留言\n)(.*)'
         match = re.search(heading_pattern, content, re.DOTALL | re.MULTILINE)
 
         if match:
-            # 如果存在,则删除对应内容
-            start, end = match.span(1)
-            new_content = content[:start] + '\n' + content[end:]
+            # 如果存在,则保留标题部分,删除后面的所有内容
+            new_content = match.group(1) + '\n'
         else:
             new_content = content + '\n\n# 我的留言\n'
 
@@ -79,32 +85,69 @@ def get_comments(filename, course_id):
 
     print(f"数据已成功导出到 {filename} 文件。")
 
+
+# def parse_notes_data(data):
+#     parsed_data = data["data"]
+#     articles = parsed_data["articles"]
+#     list = parsed_data["list"]
+#
+#     results = {}
+#
+#     # 解析 articles
+#     for article in articles:
+#         title = article["title"]
+#         article_id = article["id"]
+#         summary = article["summary"]
+#         score = article["score"]
+#         results.setdefault(title, []).append(
+#             {"id": article_id, "summary": summary, "score": score, "parts": [], "notes": []})
+#
+#     # 解析 notes
+#     for single in list:
+#         part = single["part"]
+#         note = single["note"]
+#         article_id = single["article_id"]
+#         for entry in results.values():
+#             matched_article = next((article for article in entry if article["id"] == article_id), None)
+#             if matched_article:
+#                 matched_article["parts"].append(part)
+#                 matched_article["notes"].append(note)
+#                 break
+#         else:
+#             print(f"部分: {part}, ID: {article_id} (未找到对应文章)")
+#
+#     return results
+
+
 def parse_notes_data(data):
     parsed_data = data["data"]
     articles = parsed_data["articles"]
     list = parsed_data["list"]
-
-    results = {}
+    results = []
 
     # 解析 articles
     for article in articles:
         title = article["title"]
-        article_id = article["id"]
-        summary = article["summary"]
-        results.setdefault(title, []).append({"id": article_id, "summary": summary, "parts": [], "notes": []})
+        chapter_id = article["id"]
+        parts = []
+        notes = []
+        comments = []
 
-    # 解析 notes
-    for single in list:
-        part = single["part"]
-        note = single["note"]
-        article_id = single["article_id"]
-        for entry in results.values():
-            matched_article = next((article for article in entry if article["id"] == article_id), None)
-            if matched_article:
-                matched_article["parts"].append(part)
-                matched_article["notes"].append(note)
-                break
-        else:
-            print(f"部分: {part}, ID: {article_id} (未找到对应文章)")
+        # 解析 notes
+        for single in list:
+            if single["article_id"] == chapter_id:
+                part_content = single["part"]
+                note_content = single["note"]
+                time = single["utime"]  # Assuming part_time is available in single
+                time = datetime.fromtimestamp(time).strftime("%Y-%m-%d %H:%M:%S")
 
-    return results
+                # note_content 如果为空字符串
+                if note_content == "":
+                    parts.append(Part(part_content, time))
+                else:
+                    notes.append(Note(part_content, note_content, time))
+
+        results.append(PartNote(chapter_id, title, parts, notes, comments))
+
+    # 同时也返回 list 里最后一个值的score
+    return results, list[-1]["score"]

@@ -3,7 +3,7 @@ import os
 from jikeshijian.global_utils import http_post_request, get_comments
 from jikeshijian.global_value import directory, API_INFO, API_COMMENTS_PRODUCTS_ALL
 
-course_name = "职场求生攻略"
+course_name = "徐昊 · AI 时代的软件工程"
 course_id = ""
 
 

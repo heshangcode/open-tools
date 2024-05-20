@@ -8,6 +8,7 @@ conn = http.client.HTTPSConnection("time.geekbang.com")
 payload = {"type": 1, "note_type": 0, "filters": [1]}
 json_data = http_post_request(API_NOTE_PRODUCTS, payload)
 products_ = json_data["data"]["products"]
+print(f"共有{len(products_)}个课程")
 for product in products_:
     title_ = product["title"]
     course_id = product["id"]

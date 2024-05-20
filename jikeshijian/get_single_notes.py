@@ -1,3 +1,4 @@
+import json
 import os
 from datetime import datetime
 
@@ -5,37 +6,17 @@ from global_utils import parse_notes_data, http_post_request
 from jikeshijian.global_value import API_NOTE_LIST, directory
 
 
-def get_parts_notes(payload):
+def get_notes_parts(course_id, prev=0, results=None):
+    if results is None:
+        results = []
+    payload = {"prev": prev, "size": 100, "type": 0, "pid": course_id, "sort": 2, "filters": []}
     data = http_post_request(API_NOTE_LIST, payload)
-    results = parse_notes_data(data)
-    formatted_results = []
-    for title, entries in results.items():
-        formatted_title = {"title": title, "entries": []}
-        for entry in entries:
-            summary = entry["summary"]
-            parts = entry["parts"]
-            notes = entry["notes"]
-            score = entry["score"]
-            time = datetime.fromtimestamp(score).strftime("%Y-%m-%d %H:%M:%S")
-            formatted_entry = {
-                "summary": summary,
-                "parts": parts,
-                "notes": notes,
-                "time": time
-            }
-            formatted_title["entries"].append(formatted_entry)
-        formatted_results.append(formatted_title)
-    return formatted_results
-
-
-def get_my_notes(course_id):
-    payload = {"prev": 0, "size": 1000, "type": 0, "pid": course_id, "sort": 2, "filters": [2]}
-    return get_parts_notes(payload)
-
-
-def get_parts(course_id):
-    payload = {"prev": 0, "size": 1000, "type": 0, "pid": course_id, "sort": 2, "filters": [1]}
-    return get_parts_notes(payload)
+    result, prev = parse_notes_data(data)
+    if len(data["data"]["list"]) < 100:
+        results.extend(result)
+        return results
+    results.extend(result)
+    return get_notes_parts(course_id, prev, results)
 
 
 def fw_parts_notes(title, course_id):
@@ -43,42 +24,29 @@ def fw_parts_notes(title, course_id):
         os.makedirs(directory)
     filename = directory + f"{title}.md"
     with open(filename, "w", encoding="utf-8") as file:
-        partes = get_parts(course_id)
+        parts_notes = get_notes_parts(course_id, 0, [])
+        partes_dict = [part.to_dict() for part in parts_notes]
+        # print(json.dumps(partes_dict, indent=2))
         # print(f"# 划线")
-        file.write(f"# 划线\n")
-        for part in partes:
-            # print(f"## {part['title']}")
-            for entry in part['entries']:
-                summary = entry["summary"]
-                parts = entry["parts"]
-                # print(f"- 📒摘要 {summary}")
-                file.write(f"## {part['title']}\n")
-                for part in parts:
-                    # print(f"> {part}")
-                    file.write(f"> {part}\n\n")
-                    # print()
+        file.write(f"# 划线和笔记\n")
+        for chapter in parts_notes:
+            chapter_name = chapter.chapter_name
+            parts = chapter.parts
+            notes = chapter.notes
+            file.write(f"## {chapter_name}\n")
+            for part in parts:
+                file.write(f"> {part.content}\n\n")
+                # file.write(f"⏰ {part.time}\n\n")
+                file.write("\n")
 
-        # 循环遍历打印 get_my_notes() 的返回值
-        # print(f"# 我的笔记")
-        file.write(f"# 我的笔记\n")
-        my_notes = get_my_notes(course_id)
-        for note in my_notes:
-            # print(f"## {note['title']}")
-            file.write(f"## {note['title']}\n")
-            for entry in note['entries']:
-                summary = entry["summary"]
-                parts = entry["parts"]
-                notes = entry["notes"]
-                # print(f"- 📒摘要 {summary}")
-                file.write(f"- 📒摘要 {summary}\n")
-                # print(f"> {parts[0]}")
-                file.write(f"> {parts[0]}\n\n")
-                # print()
-                # print(f"🎯{notes[0]}")
-                file.write(f"🎯{notes[0]}\n")
+            for note in notes:
+                file.write(f"> {note.content}\n\n")
+                file.write(f"- 🎯{note.note}\n\n")
+                # file.write(f"⏰ {note.time}\n\n")
+                file.write("\n")
 
     print(f"数据已成功导出到 {filename} 文件。")
 
 
 if __name__ == '__main__':
-    fw_parts_notes("职场求生攻略", 100052201)
+    fw_parts_notes("从0开始学微服务", 100014401)
